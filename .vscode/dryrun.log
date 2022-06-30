@@ -1,0 +1,6 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/root/projects/WebServer'
+make: Leaving directory '/root/projects/WebServer'
+ 
+make: *** No targets specified and no makefile found.  Stop.
+

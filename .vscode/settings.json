@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "exception": "cpp",
+        "locker.h": "c",
+        "thread": "cpp"
+    }
+}
