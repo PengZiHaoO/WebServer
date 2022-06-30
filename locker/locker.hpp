@@ -1,5 +1,5 @@
-#ifndef LOCKER_H
-#define LOCKER_H
+#ifndef LOCKER_HPP
+#define LOCKER_HPP
 
 #include <pthread.h>
 #include <semaphore.h>
