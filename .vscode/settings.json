@@ -2,6 +2,7 @@
     "files.associations": {
         "exception": "cpp",
         "locker.h": "c",
-        "thread": "cpp"
+        "thread": "cpp",
+        "types.h": "c"
     }
 }
