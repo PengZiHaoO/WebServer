@@ -20,6 +20,7 @@
 #include <sys/wait.h>
 #include <sys/uio.h>
 #include <map>
+#include <mysql/mysql.h>
 
 #include "../locker/locker.hpp"
 //#include "../CGImysql/sql_connection_pool.h"
@@ -50,7 +51,7 @@ public:
         CHECK_STATE_HEADER,
         CHECK_STATE_CONTENT
     };
-    //definition of 8 htto code
+    //definition of 8 http code
     enum HTTP_CODE{
         NO_REQUEST = 0,
         GET_REQUEST,
@@ -86,6 +87,29 @@ public:
 private:
     void init();
     HTTP_CODE process_read();
+    bool process_write(HTTP_CODE ret);
+    HTTP_CODE parse_request_line(char* text);
+    HTTP_CODE parse_headers(char* text);
+    HTTP_CODE parse_content(char* text);
+    HTTP_CODE do_request();
+    char* get_line();
+    LINE_STATUS parse_line();
+    void unmap();
+    bool add_response(const char* format, ...);
+    bool add_content(const char* content, ...);
+    bool add_status_line(int status, char* title);
+    bool add_headers(int content_length);
+    bool add_content_type();
+    bool add_content_length(int content_length);
+    bool add_linger();
+    bool add_blank_line();
+
+public:
+    static int m_epollfd;
+    static int m_user_count;
+    MYSQL* mysql;
+    int m_state;
+
 private:
     int m_sockfd;
     sockaddr_in m_address;
