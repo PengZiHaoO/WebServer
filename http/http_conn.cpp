@@ -136,4 +136,6 @@ HTTPConnection::HTTP_CODE HTTPConnection::process_read(){
                 return INTERNAL_ERROR;
         }
     }
+
+    return NO_REQUEST;
 }
