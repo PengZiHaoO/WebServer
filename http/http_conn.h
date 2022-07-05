@@ -21,6 +21,7 @@
 #include <sys/uio.h>
 #include <map>
 #include <mysql/mysql.h>
+#include <fstream>
 
 #include "../locker/locker.hpp"
 //#include "../CGImysql/sql_connection_pool.h"
@@ -70,8 +71,12 @@ public:
     };
 
 public:
-    HTTPConnection();
-    ~HTTPConnection();
+    HTTPConnection(){
+
+    }
+    ~HTTPConnection(){
+
+    }
 
 public:
     void init(int sockfd, const sockaddr_in& addr, char*, int ,int ,std::string user, std::string passwd, std::string sqlname);
@@ -107,7 +112,7 @@ private:
 public:
     static int m_epollfd;
     static int m_user_count;
-    MYSQL* mysql;
+    MYSQL* m_mysql;
     int m_state;
 
 private:
@@ -121,7 +126,7 @@ private:
     int m_write_idx;
     CHECK_STATE m_check_state;
     METHOD m_method;
-    char real_file[FILE_NAME_LEN];
+    char m_real_file[FILE_NAME_LEN];
     char* m_url;
     char* m_version;
     char* m_host;
