@@ -93,7 +93,7 @@ void HTTPConnection::init(){
     memset(m_real_file, '\0', FILE_NAME_LEN);
 }
 
-//进程读取数据
+//处理读取需要读取的数据
 HTTPConnection::HTTP_CODE HTTPConnection::process_read(){
     LINE_STATUS line_status = LINE_OK;
     HTTP_CODE ret = NO_REQUEST;
@@ -138,4 +138,72 @@ HTTPConnection::HTTP_CODE HTTPConnection::process_read(){
     }
 
     return NO_REQUEST;
+}
+
+//处理需要写的数据
+bool HTTPConnection::process_write(HTTP_CODE ret){
+    switch (ret){
+        case INTERNAL_ERROR:
+            add_status_line(500, error_500_title);
+            add_headers(strlen(error_500_form));
+
+            if(!add_content(error_500_form)){
+                return false;
+            }
+
+            break;
+        case BAD_REQUEST:
+            add_status_line(400, error_400_title);
+            add_headers(strlen(error_400_form));
+
+            if(!add_content(error_400_form)){
+                return false;
+            }
+
+            break;
+        case FORBIDDEN_REQUEST:
+            add_status_line(403, error_403_title);
+            add_headers(strlen(error_403_form));
+
+            if(!add_content(error_404_form)){
+                return false;
+            }
+
+            break;
+        case FILE_REQUEST:
+            add_status_line(404, error_400_title);
+
+            if(m_file_stat.st_size != 0){
+                add_headers(m_file_stat.st_size);
+
+                m_iv[0].iov_base = m_write_buf;
+                m_iv[0].iov_len = m_write_idx;
+                m_iv[1].iov_base = m_file_address;
+                m_iv[1].iov_len = m_file_stat.st_size;
+
+                m_iv_count = 2;
+
+                bytes_to_send = m_checked_idx + m_file_stat.st_size;
+
+                return true;
+            }
+            else{
+                const char* ok_string = "<html><body></body></html>";
+                add_headers(strlen(ok_string));
+
+                if(!add_content(error_404_form)){
+                    return false;
+                }
+            }
+            break;
+        default:
+            return false;
+    }
+    
+    m_iv[0].iov_base = m_write_buf;
+    m_iv[0].iov_len = m_write_idx;
+    m_iv_count = 1;
+    bytes_to_send = m_write_idx;
+
+    return true;
 }
