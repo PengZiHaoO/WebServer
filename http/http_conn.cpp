@@ -105,7 +105,7 @@ HTTPConnection::HTTP_CODE HTTPConnection::process_read(){
         m_start_line = m_checked_idx;
         //LOG_INFO("%s", text);
         switch (m_check_state){
-            case CHECK_STATE_REQUESTLINE:
+            case CHECK_STATE_REQUESTLINE:{
                 ret = parse_request_line(text);
                 
                 if(ret == BAD_REQUEST){
@@ -113,7 +113,8 @@ HTTPConnection::HTTP_CODE HTTPConnection::process_read(){
                 }
 
                 break;
-            case CHECK_STATE_HEADER:
+            }
+            case CHECK_STATE_HEADER:{
                 ret = parse_headers(text);
 
                 if(ret == BAD_REQUEST){
@@ -123,7 +124,8 @@ HTTPConnection::HTTP_CODE HTTPConnection::process_read(){
                     return do_request();
                 }
                 break;
-            case CHECK_STATE_CONTENT:
+            }
+            case CHECK_STATE_CONTENT:{
                 ret = parse_content(text);
 
                 if(ret == GET_REQUEST){
@@ -132,8 +134,10 @@ HTTPConnection::HTTP_CODE HTTPConnection::process_read(){
 
                 line_status = LINE_OPEN;
                 break;
-            default:
+            }
+            default:{
                 return INTERNAL_ERROR;
+            }
         }
     }
 
@@ -143,7 +147,7 @@ HTTPConnection::HTTP_CODE HTTPConnection::process_read(){
 //处理需要写的数据
 bool HTTPConnection::process_write(HTTP_CODE ret){
     switch (ret){
-        case INTERNAL_ERROR:
+        case INTERNAL_ERROR:{
             add_status_line(500, error_500_title);
             add_headers(strlen(error_500_form));
 
@@ -152,7 +156,8 @@ bool HTTPConnection::process_write(HTTP_CODE ret){
             }
 
             break;
-        case BAD_REQUEST:
+        }
+        case BAD_REQUEST:{
             add_status_line(400, error_400_title);
             add_headers(strlen(error_400_form));
 
@@ -161,7 +166,8 @@ bool HTTPConnection::process_write(HTTP_CODE ret){
             }
 
             break;
-        case FORBIDDEN_REQUEST:
+        }
+        case FORBIDDEN_REQUEST:{
             add_status_line(403, error_403_title);
             add_headers(strlen(error_403_form));
 
@@ -170,7 +176,8 @@ bool HTTPConnection::process_write(HTTP_CODE ret){
             }
 
             break;
-        case FILE_REQUEST:
+        }
+        case FILE_REQUEST:{
             add_status_line(404, error_400_title);
 
             if(m_file_stat.st_size != 0){
@@ -196,10 +203,12 @@ bool HTTPConnection::process_write(HTTP_CODE ret){
                 }
             }
             break;
-        default:
+        }
+        default:{
             return false;
+        }
     }
-    
+
     m_iv[0].iov_base = m_write_buf;
     m_iv[0].iov_len = m_write_idx;
     m_iv_count = 1;
