@@ -216,3 +216,83 @@ bool HTTPConnection::process_write(HTTP_CODE ret){
 
     return true;
 }
+
+//一次性读取用户数据
+bool HTTPConnection::read_once(){
+    if(m_read_idx >= READ_BUFFER_SIZE){
+        return false;
+    }
+
+    int bytes_read = 0;
+
+    //LT模式读取数据
+    if(0 == m_trig_mode){
+        bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
+        
+        if(bytes_read <= 0){
+            return false;
+        }
+
+        m_read_idx += bytes_read;
+
+        return true;
+    }
+    //ET模式读取数据
+    else{
+        while(true){
+            bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
+
+            if(-1 == bytes_read){
+                if(errno == EAGAIN || errno == EWOULDBLOCK)
+
+                return false;
+            }
+            else if(0 == bytes_read){
+                return false;
+            }
+
+            m_read_idx += bytes_read;
+        }
+        return true;
+    }
+
+    return false;
+}
+
+//从状态机
+HTTPConnection::LINE_STATUS HTTPConnection::parse_line(){
+    char temp = 0;
+
+    for(; m_checked_idx < m_read_idx; ++m_checked_idx){
+        temp = m_read_buf[m_checked_idx];
+
+        if(temp == '\r'){
+            if((m_checked_idx + 1) == m_read_idx){
+                return LINE_OPEN;
+            }
+            else if(m_read_buf[m_checked_idx + 1] == '\n'){
+                m_read_buf[m_checked_idx++] = '\0';
+                m_read_buf[m_checked_idx++] = '\0';
+
+                return LINE_OK;
+            }
+            
+            return LINE_BAD;
+        }
+        else if(temp == '\n'){
+            if((m_read_idx > 1) && (m_read_buf[m_checked_idx - 1] == '\r')){
+                m_read_buf[m_checked_idx - 1] = '\0';
+                m_read_buf[m_checked_idx++] = '\0';
+
+                return LINE_OK;
+            }
+
+            return LINE_BAD;
+        }
+    }
+
+    return LINE_OPEN;
+}
+
+
+//主状态机
