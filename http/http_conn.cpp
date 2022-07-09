@@ -296,3 +296,59 @@ HTTPConnection::LINE_STATUS HTTPConnection::parse_line(){
 
 
 //主状态机
+//解析请求行 获取url 请求方法 和 http协议版本
+HTTPConnection::HTTP_CODE HTTPConnection::parse_request_line(char* text){
+    //获取url
+    m_url = strpbrk(text, " \t");
+    if(!m_url){
+        return BAD_REQUEST;
+    }
+
+    *(m_url++) = '\0';
+    //获取请求方法
+    char* method = text;
+    if(strcasecmp(method, "GET")){
+        m_method = GET;
+    }
+    else if(strcasecmp(method, "POST")){
+        m_method = POST;
+        cgi = 1;
+    }
+    else{
+        return BAD_REQUEST;
+    }
+
+    //获取http协议版本
+    m_url += strspn(m_url, " \t");
+    m_version = strpbrk(m_url, " \t");
+
+    if(!m_version){
+        return BAD_REQUEST;
+    }
+
+    *(m_version++) = '\0';
+    m_version += strspn(m_version, " \t");
+
+    if(strcasecmp(m_version, "HTTP/1.1") != 0){
+        return BAD_REQUEST;
+    }
+
+    if(strncasecmp(m_url, "http://", 7) == 0){
+        m_url += 7;
+        m_url = strchr(m_url, '/');
+    }
+
+    if (strncasecmp(m_url, "https://", 8) == 0)
+    {
+        m_url += 8;
+        m_url = strchr(m_url, '/');
+    }
+
+    if (!m_url || m_url[0] != '/')
+        return BAD_REQUEST;
+    //当url为/时，显示判断界面
+    if (strlen(m_url) == 1)
+        strcat(m_url, "judge.html");
+    m_check_state = CHECK_STATE_HEADER;
+    return NO_REQUEST;
+}
