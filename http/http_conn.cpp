@@ -352,3 +352,53 @@ HTTPConnection::HTTP_CODE HTTPConnection::parse_request_line(char* text){
     m_check_state = CHECK_STATE_HEADER;
     return NO_REQUEST;
 }
+
+//解析HTTP请求头部行
+HTTPConnection::HTTP_CODE HTTPConnection::parse_headers(char* headers){
+    if(headers[0] == '\0'){
+        if(m_content_length != 0){
+            m_check_state = CHECK_STATE_CONTENT;
+            return NO_REQUEST;
+        }
+        return GET_REQUEST;
+    }
+    else if(strncasecmp(headers, "Connection:", 11) == 0){
+        headers += 11;
+        headers += strspn(headers, " \t");
+
+        if(strcasecmp(headers, "keep-alive") == 0){
+            m_linger = true;
+        }
+    }
+    else if(strncasecmp(headers, "Content-length:", 15) == 0){
+        headers += 15;
+        headers += strspn(headers, " \t");
+
+        m_content_length = atol(headers);
+    }
+    else if(strncasecmp(headers, "Host:", 5) == 0){
+        headers += 5;
+        headers += strspn(headers, " \t");
+
+        m_host = headers;
+    }
+    else{
+        //LOG_INFO("ohhh!unkonw headers: %s", headers);
+    }
+
+    return NO_REQUEST;
+}
+
+//解析HTTP请求内容即判断HTTP请求是否完整
+HTTPConnection::HTTP_CODE HTTPConnection::parse_content(char* text){
+    if(m_read_idx >= (m_content_length + m_checked_idx)){
+        text[m_content_length] = '\0';
+
+        m_string = text;
+
+        return GET_REQUEST;
+    }
+
+    return NO_REQUEST;
+}
+
