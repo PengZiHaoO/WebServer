@@ -64,12 +64,144 @@ void modfd(int epfd, int fd, int ev, int trig_mode){
     epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event);
 }
 
+int HTTPConnection::m_epollfd = -1;
+int HTTPConnection::m_user_count = 0;
+
+//外部调用的初始换成员函数
+void HTTPConnection::init(int sockfd, const sockaddr_in& addr, char *root, int trig_mode,int close_log,std::string user, std::string passwd, std::string sqlname){
+    m_sockfd = sockfd;
+    m_address = addr;
+
+    addfd(m_epollfd, sockfd, true, m_trig_mode);
+
+    m_user_count++;
+
+    doc_root = root;
+    m_trig_mode = trig_mode;
+    m_close_log = close_log;
+
+    strcpy(sql_user, user.c_str());
+    strcpy(sql_passwd, passwd.c_str());
+    strcpy(sql_name, sqlname.c_str());
+
+    init();
+}
+
+//关闭socket连接
+void HTTPConnection::close_conn(bool real_close/*= true*/){
+    if(real_close && (m_sockfd != -1)){
+        printf("close %d\n", m_sockfd);
+        rmfd(m_epollfd, m_sockfd);
+
+        m_sockfd = -1;
+        m_user_count--;
+    }
+}
+
+//
+void HTTPConnection::process(){
+    HTTP_CODE read_ret = process_read();
+    if(read_ret == NO_REQUEST){
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_trig_mode);
+        return;
+    }
+    bool write_ret = process_write(read_ret);
+    if(!write_ret){
+        //process fail 关闭连接
+        close_conn();
+    }
+    //重置oneshot
+    modfd(m_epollfd, m_sockfd, EPOLLOUT, m_trig_mode);
+}
+
+bool HTTPConnection::write(){
+    if(bytes_to_send == 0){
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_trig_mode);
+        init();
+        return true;
+    }
+
+    int temp = 0;
+    while (1){
+         temp = writev(m_sockfd, m_iv, m_iv_count);
+
+        if (temp < 0)
+        {
+            if (errno == EAGAIN)
+            {
+                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_trig_mode);
+                return true;
+            }
+            unmap();
+            return false;
+        }
+
+        bytes_have_send += temp;
+        bytes_to_send -= temp;
+        if (bytes_have_send >= m_iv[0].iov_len)
+        {
+            m_iv[0].iov_len = 0;
+            m_iv[1].iov_base = m_file_address + (bytes_have_send - m_write_idx);
+            m_iv[1].iov_len = bytes_to_send;
+        }
+        else
+        {
+            m_iv[0].iov_base = m_write_buf + bytes_have_send;
+            m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
+        }
+
+        if (bytes_to_send <= 0)
+        {
+            unmap();
+            modfd(m_epollfd, m_sockfd, EPOLLIN, m_trig_mode);
+
+            if (m_linger)
+            {
+                init();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    
+}
+
 sockaddr_in* HTTPConnection::get_address(){
     return &m_address;
 }
 
-int HTTPConnection::m_epollfd = -1;
-int HTTPConnection::m_user_count = 0;
+void HTTPConnection::initmysql_result(/*connection_pool *connPool*/)
+{
+    //先从连接池中取一个连接
+    MYSQL *mysql = NULL;
+    //connectionRAII mysqlcon(&mysql, connPool);
+
+    //在user表中检索username，passwd数据，浏览器端输入
+    if (mysql_query(mysql, "SELECT username,passwd FROM user"))
+    {
+        //LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
+    }
+
+    //从表中检索完整的结果集
+    MYSQL_RES *result = mysql_store_result(mysql);
+
+    //返回结果集中的列数
+    int num_fields = mysql_num_fields(result);
+
+    //返回所有字段结构的数组
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+
+    //从结果集中获取下一行，将对应的用户名和密码，存入map中
+    while (MYSQL_ROW row = mysql_fetch_row(result))
+    {
+        std::string temp1(row[0]);
+        std::string temp2(row[1]);
+        users[temp1] = temp2;
+    }
+}
 
 //私有init函数 初始化一些成员变量
 void HTTPConnection::init(){
@@ -545,3 +677,74 @@ HTTPConnection::HTTP_CODE HTTPConnection::do_request(){
 
     return FILE_REQUEST;
 }
+
+//将数据映射到内核提高访问速度
+void HTTPConnection::unmap(){
+    if(m_file_address){
+        munmap(m_file_address, m_file_stat.st_size);
+        m_file_address = nullptr;
+    }
+}
+
+//
+bool HTTPConnection::add_response(const char *format, ...){
+    if(m_write_idx >= WRITE_BUFFER_SIZE){
+        return false;
+    }
+
+    va_list arg_list;
+    va_start(arg_list, format);
+
+    int len = vsnprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx - 1, format, arg_list);
+    if(len >= (WRITE_BUFFER_SIZE - m_write_idx - 1)){
+        va_end(arg_list);
+
+        return false;
+    }
+    m_write_idx += len;
+    va_end(arg_list);
+
+    //LOG_INFO("request:%s, m_write_buf");
+
+    return true;
+}
+
+//添加状态行信息
+bool HTTPConnection::add_status_line(int status, const char *title){
+    return add_response("%s %d %s \r\n", "HTTP/1.1", status, title);
+}
+
+//添加头部行信息
+bool HTTPConnection::add_headers(int content_len){
+    return (add_content_length(content_len) && add_linger() && add_blank_line());
+}
+
+//添加消息体内容长度
+bool HTTPConnection::add_content_length(int content_len){
+    return add_response("Content-Length:%d\r\n", content_len);
+}
+
+//添加消息体内容格式
+bool HTTPConnection::add_content_type(){
+    return add_response("Content-Type:%s\r\n", "text/html");
+}
+
+//添加是否保持连接
+bool HTTPConnection::add_linger(){
+    return add_response("Connection:%s\r\n",((m_linger == true)?"keep-alive": "close"));
+}
+
+//添加空行
+bool HTTPConnection::add_blank_line(){
+    return add_response("%s", "\r\n");
+}
+
+//添加消息体实质的消息内容
+bool HTTPConnection::add_content(const char *content){
+    return add_response("%s", content);
+}
+
+
+
+
+
