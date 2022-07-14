@@ -3,6 +3,13 @@
         "exception": "cpp",
         "locker.h": "c",
         "thread": "cpp",
-        "types.h": "c"
+        "types.h": "c",
+        "*.tcc": "cpp",
+        "fstream": "cpp",
+        "iosfwd": "cpp",
+        "new": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "streambuf": "cpp"
     }
 }
