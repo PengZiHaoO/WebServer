@@ -101,7 +101,7 @@ private:
     LINE_STATUS parse_line();
     void unmap();
     bool add_response(const char* format, ...);
-    bool add_content(const char* content, ...);
+    bool add_content(const char* content);
     bool add_status_line(int status, const char* title);
     bool add_headers(int content_length);
     bool add_content_type();
