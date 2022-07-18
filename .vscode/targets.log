@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Jul  1 19:26:20 2022
+# Make data base, printed on Sun Jul 17 22:25:42 2022
 
 # Variables
 
@@ -20,8 +20,6 @@ make: *** No rule to make target 'all'.  Stop.
 WSLENV = ELECTRON_RUN_AS_NODE/w:
 # default
 .SHELLFLAGS := -c
-# environment
-VSCODE_LOG_NATIVE = false
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
 # automatic
@@ -43,21 +41,19 @@ GNUMAKEFLAGS :=
 # environment
 XDG_DATA_DIRS = /usr/local/share:/usr/share:/var/lib/snapd/desktop
 # environment
-VSCODE_VERBOSE_LOGGING = true
-# environment
 LESSOPEN = | /usr/bin/lesspipe %s
 # environment
 VSCODE_CWD = /mnt/c/Users/Lenovo/AppData/Local/Programs/Microsoft VS Code
 # default
 MAKE_HOST := x86_64-pc-linux-gnu
 # environment
-PATH = /root/.vscode-server/bin/30d9c6cd9483b2cc586687151bcbcd635f373630/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/d/MinGW/soft/mingw64/bin:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/python/python-3.9.1-amd64.exe:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/nodejs/:/mnt/c/Program Files/MySQL/MySQL Shell 8.0/bin/:/mnt/c/Users/Lenovo/AppData/Local/Programs/Python/Python39/Scripts:/mnt/c/Users/Lenovo/AppData/Local/Microsoft/WindowsApps:/mnt/c/Program Files/JetBrains/PyCharm Community Edition 2021.2/bin:/mnt/c/Users/Lenovo/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/Lenovo/vcpkg:/mnt/d/clion/CLion 2021.3.3/bin:/mnt/d/datagrip/DataGrip 2021.3.4/bin:/mnt/c/Users/Lenovo/AppData/Roaming/npm:/snap/bin
+PATH = /root/.vscode-server/bin/b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/d/MinGW/soft/mingw64/bin:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/python/python-3.9.1-amd64.exe:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/nodejs/:/mnt/c/Program Files/MySQL/MySQL Shell 8.0/bin/:/mnt/c/Users/Lenovo/AppData/Local/Programs/Python/Python39/Scripts:/mnt/c/Users/Lenovo/AppData/Local/Microsoft/WindowsApps:/mnt/c/Program Files/JetBrains/PyCharm Community Edition 2021.2/bin:/mnt/c/Users/Lenovo/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/Lenovo/vcpkg:/mnt/d/clion/CLion 2021.3.3/bin:/mnt/d/datagrip/DataGrip 2021.3.4/bin:/mnt/c/Users/Lenovo/AppData/Roaming/npm:/snap/bin:./node_modules/.bin
 # environment
 XDG_RUNTIME_DIR = /mnt/wslg/runtime-dir
 # environment
-VSCODE_LOG_STACK = false
+ELECTRON_RUN_AS_NODE = 1
 # environment
-VSCODE_IPC_HOOK_CLI = /mnt/wslg/runtime-dir/vscode-ipc-26622413-af4e-4981-9247-19f73de73bd3.sock
+VSCODE_IPC_HOOK_CLI = /mnt/wslg/runtime-dir/vscode-ipc-8067de26-d810-4e24-bab4-afd46a4d32fe.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -66,8 +62,6 @@ LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:
 %F = $(notdir $%)
 # environment
 DISPLAY = :0
-# environment
-VSCODE_PIPE_LOGGING = true
 # environment
 PWD = /root/projects/WebServer
 # default
@@ -151,11 +145,9 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_EXTHOST_WILL_SEND_SOCKET = true
-# environment
 WSL_DISTRO_NAME = Ubuntu
 # variable set hash-table stats:
-# Load=71/1024=7%, Rehash=0, Collisions=4/93=4%
+# Load=67/1024=7%, Rehash=0, Collisions=4/89=4%
 
 # Pattern-specific Variable Values
 
@@ -163,9 +155,9 @@ WSL_DISTRO_NAME = Ubuntu
 
 # Directories
 
-# . (device 2080, inode 50820): 10 files, no impossibilities.
+# . (device 2080, inode 50820): 11 files, no impossibilities.
 
-# 10 files, no impossibilities in 1 directories.
+# 11 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -215,12 +207,12 @@ GNUmakefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 18 / storage = 180 B / avg = 10 B
-# current buf: size = 8162 B / used = 180 B / count = 18 / avg = 10 B
+# strcache buffers: 1 (0) / strings = 19 / storage = 184 B / avg = 9 B
+# current buf: size = 8162 B / used = 184 B / count = 19 / avg = 9 B
 
-# strcache performance: lookups = 21 / hit rate = 14%
+# strcache performance: lookups = 22 / hit rate = 13%
 # hash-table stats:
-# Load=18/8192=0%, Rehash=0, Collisions=1/21=5%
-# Finished Make data base on Fri Jul  1 19:26:20 2022
+# Load=19/8192=0%, Rehash=0, Collisions=1/22=5%
+# Finished Make data base on Sun Jul 17 22:25:42 2022
 
  

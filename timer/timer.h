@@ -15,6 +15,7 @@
 #include <pthread.h>
 #include <cstdio>
 #include <cstdlib>
+#include <cassert>
 #include <sys/mman.h>
 #include <stdarg.h>
 #include <errno.h>
@@ -36,7 +37,7 @@ struct ClientData {
 //定时器类
 class UtilityTimer
 {
-private:
+public:
     //超时时间
     time_t expire;
 
@@ -57,17 +58,18 @@ public:
 };
 
 //定时器容器类
+//通过双向有序链表定时器组织起来
 class TimerContainer{
 public:
     TimerContainer();
     ~TimerContainer();
 
-    void add_timer_node(UtilityTimer *timer);
-    void adjust_timer_node(UtilityTimer *timer);
-    void delete_timer_node(UtilityTimer *timer);
+    void add_timer_node(UtilityTimer *timer_node);
+    void adjust_timer_node(UtilityTimer *timer_node);
+    void delete_timer_node(UtilityTimer *timer_node);
     void timer_tick();
 private:
-    void add_timer_node(UtilityTimer *timer, UtilityTimer *head);
+    void add_timer_node(UtilityTimer *timer_node, UtilityTimer *head);
 
     UtilityTimer *m_head;
     UtilityTimer *m_tail;
