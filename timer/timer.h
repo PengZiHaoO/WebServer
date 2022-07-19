@@ -97,7 +97,7 @@ public:
     static int *u_pipefd;
     TimerContainer m_timer_container;
     static int u_epollfd;
-    int m_trig_mode;
+    int m_timeslot;
 };
 
 //被调用的

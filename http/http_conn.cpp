@@ -35,7 +35,7 @@ void addfd(int epfd, int fd, bool one_shoot, int trig_mode){
         event.events = EPOLLIN | EPOLLHUP;
     }
 
-    if(1 == one_shoot){
+    if(one_shoot){
         event.events |= EPOLLONESHOT;
     }
 

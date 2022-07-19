@@ -164,3 +164,71 @@ void timer_event(ClientData *user_data){
     close(user_data->sockfd);
     HTTPConnection::m_user_count--;
 }
+
+//初始化timeslot
+void Utility::init(int timeslot){
+    m_timeslot = timeslot;
+}
+
+
+int Utility::setnonblocking(int fd){
+    int past_option = fcntl(fd, F_GETFL);
+    int now_nonblocking_option = past_option | O_NONBLOCK;
+    fcntl(fd, F_SETFL, now_nonblocking_option);
+    return past_option;
+}
+
+void Utility::addfd(int epfd, int fd, bool one_shoot, int trig_mode){
+    epoll_event event;
+    event.data.fd = fd;
+
+    if(1 == trig_mode){
+        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+    }
+    else{
+        event.events = EPOLLIN | EPOLLHUP;
+    }
+
+    if(one_shoot){
+        event.events |= EPOLLONESHOT;
+    }
+
+    epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
+    setnonblocking(fd);
+}
+
+//信号处理函数 
+//将信号通过管道发送至用户状态下的进程
+void Utility::sig_handler(int sig){
+    int save_errno = errno;
+    int msg = sig;
+    send(u_pipefd[1], (char *)&msg, 1, 0);
+    errno = save_errno;
+}
+
+void Utility::add_sig(int sig, void(handler)(int), bool restart/*= true*/){
+    struct sigaction sa;
+    memset(&sa, '\0', sizeof(sa));
+    sa.sa_handler = handler;
+
+    if(restart){
+        sa.sa_flags |= SA_RESTART;
+    }
+
+    sigfillset(&sa.sa_mask);
+
+    assert(sigaction(sig, &sa, nullptr) != -1);
+}
+
+void Utility::timer_handler(){
+    m_timer_container.timer_tick();
+    alarm(m_timeslot);
+}
+
+void Utility::show_error(int connfd, const char *info){
+    send(connfd, info, strlen(info), 0);
+}
+
+int  Utility::u_epollfd = 0;
+int *Utility::u_pipefd = 0;
+
