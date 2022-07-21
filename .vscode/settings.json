@@ -12,6 +12,8 @@
         "sstream": "cpp",
         "streambuf": "cpp",
         "cassert": "cpp",
-        "cstdlib": "cpp"
+        "cstdlib": "cpp",
+        "memory": "cpp",
+        "cstring": "cpp"
     }
 }
