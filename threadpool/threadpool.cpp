@@ -1,8 +1,8 @@
 #include "threadpool.h"
 
 template<class T>
-ThreadPool<T>::ThreadPool(int actor_model,/*connection_pool *conn_pool,*/int thread_number /*= 8*/,int max_request_number /*= 10000*/)
-                          :m_actor_model(actor_model),/*m_conn_pool(conn_pool),*/m_thread_number(thread_number),m_max_requests(max_requests_number),
+ThreadPool<T>::ThreadPool(int actor_model,ConnectionPool *conn_pool, int thread_number /*= 8*/,int max_request_number /*= 10000*/)
+                          :m_actor_model(actor_model),m_conn_pool(conn_pool),m_thread_number(thread_number),m_max_requests(max_requests_number),
                            m_threads(NULL){
     if(thread_number <= 0 || max_request_number <= 0){
         throw std::exception();
@@ -97,7 +97,7 @@ void ThreadPool<T>::run(){
             if(0 == request->m_state){
                 if(request->read_once()){
                     request->improv = 1;
-                    //ConnectionRAII mysql_conn(&request->mysql, m_conn_pool);
+                    ConnectionRAII mysql_conn(&request->mysql, m_conn_pool);
                     request->process();
                 }
                 else{
@@ -115,7 +115,7 @@ void ThreadPool<T>::run(){
             }
         }
         else{
-            //connectionRAII mysql_conn(&request->mysql, m_conn_pool);
+            ConnectionRAII mysql_conn(&request->mysql, m_conn_pool);
             request->process();
         }
     }

@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <assert.h>
+#include <cassert>
 #include <sys/stat.h>
 #include <string.h>
 #include <pthread.h>
@@ -24,9 +24,9 @@
 #include <fstream>
 
 #include "../locker/locker.hpp"
-//#include "../CGImysql/sql_connection_pool.h"
-//#include "../timer/lst_timer.h"
-//#include "../log/log.h"
+#include "../dbconnpool/mysql_conn_pool.h"
+#include "../timer/timer.h"
+#include "../log/log.h"
 
 class HTTPConnection{
 public:
@@ -85,7 +85,7 @@ public:
     bool read_once();
     bool write();
     sockaddr_in* get_address();
-    void initmysql_result(/*ConnectionPool* conn_pool*/);
+    void initmysql_result(ConnectionPool* conn_pool);
     int timer_flag;
     int improv;
 

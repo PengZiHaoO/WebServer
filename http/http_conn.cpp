@@ -173,16 +173,16 @@ sockaddr_in* HTTPConnection::get_address(){
     return &m_address;
 }
 
-void HTTPConnection::initmysql_result(/*connection_pool *connPool*/)
+void HTTPConnection::initmysql_result(ConnectionPool *connPool)
 {
     //先从连接池中取一个连接
     MYSQL *mysql = NULL;
-    //connectionRAII mysqlcon(&mysql, connPool);
+    ConnectionRAII mysqlcon(&mysql, connPool);
 
     //在user表中检索username，passwd数据，浏览器端输入
     if (mysql_query(mysql, "SELECT username,passwd FROM user"))
     {
-        //LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
+        LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
     }
 
     //从表中检索完整的结果集
@@ -239,7 +239,7 @@ HTTPConnection::HTTP_CODE HTTPConnection::process_read(){
         text = get_line();
 
         m_start_line = m_checked_idx;
-        //LOG_INFO("%s", text);
+        LOG_INFO("%s", text);
         switch (m_check_state){
             case CHECK_STATE_REQUESTLINE:{
                 ret = parse_request_line(text);
@@ -519,7 +519,7 @@ HTTPConnection::HTTP_CODE HTTPConnection::parse_headers(char* headers){
         m_host = headers;
     }
     else{
-        //LOG_INFO("ohhh!unkonw headers: %s", headers);
+        LOG_INFO("ohhh!unkonw headers: %s", headers);
     }
 
     return NO_REQUEST;
@@ -704,7 +704,7 @@ bool HTTPConnection::add_response(const char *format, ...){
     m_write_idx += len;
     va_end(arg_list);
 
-    //LOG_INFO("request:%s, m_write_buf");
+    LOG_INFO("request:%s, m_write_buf");
 
     return true;
 }
